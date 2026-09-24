@@ -65,7 +65,6 @@ export default function ProductExplorer() {
 
             {/* ส่วนแสดงผล หัวข้อ 1.7 */}
             <section aria-live="polite">
-                {status === "idle" && <p>คลิกปุ่มโหลดข้อมูลเพื่อเริ่ม</p>}
 
                 {status === "loading" && <p>กำลังโหลดข้อมูล</p>}
 
