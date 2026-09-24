@@ -17,9 +17,9 @@ export default function ProductSearchForm(
     { onSearch }: ProductSearchFormProps
 ) {
     const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting }, } = useForm<SearchQuery>({
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },} = useForm<SearchQuery>({
             // เติม: ตัวเชื่อมที่ทำให้ React Hook Form ตรวจข้อมูลด้วย Zod Schema
             resolver: zodResolver(SearchQuerySchema),
             mode: "onTouched",
@@ -59,5 +59,6 @@ export default function ProductSearchForm(
 
             <button type="submit">ค้นหา</button>
         </form>
+        
     );
 }

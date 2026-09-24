@@ -1,16 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
 import { defaultQuery, fetchProducts } from "../lib/products";
-import type { Product, ProductList, SearchQuery } from "../lib/products";
+import type { Product, ProductDraft, ProductList, SearchQuery } from "../lib/products";
 import ProductSearchForm from "./ProductSearchForm";
+import ProductForm from "./ProductForm";
+import { useEffect, useState } from "react";
 
-type LoadState = "idle" | "loading" | "error" | "ready";
+type LoadState = "loading" | "error" | "ready";
+
 
 export default function ProductExplorer() {
     const [products, setProducts] = useState<Product[]>([]);
-    const [status, setStatus] = useState<LoadState>("idle");
+    // const [status, setStatus] = useState<LoadState>("idle");
+    // นำบรรทัดของสถานะ idle ออก เพราะหน้าจอโหลดเองตั้งแต่เปิด
     const [errorMessage, setErrorMessage] = useState("");
+    const [status, setStatus] = useState<LoadState>("loading");
+
+    useEffect(() => {
+        fetchProducts(defaultQuery).then(showResult).catch(showError);
+        // เติม: สิ่งที่กำหนดให้ทำงานเพียงครั้งเดียวตอนแสดงผลครั้งแรก
+    }, []);
 
     function showResult(list: ProductList) {
         setProducts(list.products);
@@ -35,11 +45,16 @@ export default function ProductExplorer() {
         }
     }
 
+    function saveProduct(draft: ProductDraft) {
+        setProducts([...products, { ...draft, id: Date.now() }]);
+        // หากต้องการให้แสดงตารางทันทีแม้ยังไม่ได้กดปุ่มโหลด ให้เปิดบรรทัดล่างนี้:
+        // if (status === "idle") setStatus("ready");
+    }
+
     return (
         <main>
             <h1>รายการสินค้า</h1>
             <ProductSearchForm onSearch={loadProducts} />
-
             <button
                 type="button"
                 onClick={() => loadProducts(defaultQuery)}
@@ -48,7 +63,7 @@ export default function ProductExplorer() {
                 {status === "loading" ? "กำลังโหลด" : "โหลดข้อมูล"}
             </button>
 
-            {/* ส่วนแสดงผล เขียนเพิ่มในหัวข้อ 1.7 */}
+            {/* ส่วนแสดงผล หัวข้อ 1.7 */}
             <section aria-live="polite">
                 {status === "idle" && <p>คลิกปุ่มโหลดข้อมูลเพื่อเริ่ม</p>}
 
@@ -64,13 +79,29 @@ export default function ProductExplorer() {
                     <table>
                         <thead>
                             <tr>
-                                <th>ชื่อสินค้า</th><th>ราคา</th>
-                                <th>คงเหลือ</th><th>หมวดหมู่</th>
+                                <th>รูปภาพ</th>
+                                <th>ชื่อสินค้า</th>
+                                <th>ราคา</th>
+                                <th>คงเหลือ</th>
+                                <th>หมวดหมู่</th>
                             </tr>
                         </thead>
                         <tbody>
                             {products.map((item) => (
                                 <tr key={item.id}>
+                                    <td>
+                                        {item.thumbnail ? (
+                                            <Image
+                                                src={item.thumbnail}
+                                                alt={item.title}
+                                                width={60}
+                                                height={60}
+                                                style={{ objectFit: "cover", borderRadius: "4px" }}
+                                            />
+                                        ) : (
+                                            <span>ไม่มีรูป</span>
+                                        )}
+                                    </td>
                                     <td>{item.title}</td>
                                     <td>{item.price}</td>
                                     <td>{item.stock}</td>
@@ -81,6 +112,14 @@ export default function ProductExplorer() {
                     </table>
                 )}
             </section>
+
+            <div>
+                <ProductForm
+                    editing={null}
+                    onSave={saveProduct}
+                    onCancel={() => { }}
+                />
+            </div>
         </main>
     );
 }
